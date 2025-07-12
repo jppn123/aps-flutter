@@ -6,6 +6,7 @@ class AuthService {
   static const String baseUrl = 'http://192.168.0.102:8000';
   static const String tokenKey = 'auth_token';
   static const String userIdKey = 'user_id';
+  static const String idUsu = 'id_usu';
   static const String userNameKey = 'user_name';
   static const String userEmailKey = 'user_email';
 
@@ -98,7 +99,7 @@ class AuthService {
     if (response.statusCode == 200) {
       final data = json.decode(response.body);
       final prefs = await SharedPreferences.getInstance();
-      await prefs.setString('id_usu', data['id_usu'].toString());
+      await prefs.setString(idUsu, data['id_usu'].toString());
       if (data['tp_login'] != null) {
         await prefs.setString('tp_login', data['tp_login'].toString());
       }
