@@ -33,6 +33,7 @@ class AuthService {
         
         await _saveToken(token);
         await _saveUserInfo(userId, userName, userEmail);
+        await validarToken(token);
         return token;
       } else {
         throw Exception('Falha no login: ${response.body}');
@@ -84,5 +85,26 @@ class AuthService {
   Future<String?> getUserEmail() async {
     final prefs = await SharedPreferences.getInstance();
     return prefs.getString(userEmailKey);
+  }
+
+  Future<Map<String, dynamic>> validarToken(String token) async {
+    final response = await http.get(
+      Uri.parse('$baseUrl/login/validarToken'),
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer $token',
+      },
+    );
+    if (response.statusCode == 200) {
+      final data = json.decode(response.body);
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setString('id_usu', data['id_usu'].toString());
+      if (data['tp_login'] != null) {
+        await prefs.setString('tp_login', data['tp_login'].toString());
+      }
+      return data;
+    } else {
+      throw Exception('Falha ao validar token: ${response.body}');
+    }
   }
 } 

@@ -13,6 +13,8 @@ import 'login_screen.dart';
 import '../screens/user_data_screen.dart';
 import '../screens/team_screen.dart';
 import '../screens/registrar_ponto_screen.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'criar_usuario_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   @override
@@ -51,61 +53,74 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
             Expanded(
               child: Center(
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
+                child: FutureBuilder<String?>(
+                  future: _getTpLogin(),
+                  builder: (context, snapshot) {
+                    final tpLogin = snapshot.data;
+                    return Column(
+                      mainAxisSize: MainAxisSize.min,
                       children: [
-                        Expanded(
-                          child: ElevatedButton.icon(
-                            onPressed: () {
-                              Navigator.of(context).push(
-                                MaterialPageRoute(builder: (context) => UserDataScreen()),
-                              );
-                            },
-                            icon: Icon(Icons.person),
-                            label: Text('Meus Dados'),
-                            style: ElevatedButton.styleFrom(
-                              padding: EdgeInsets.symmetric(vertical: 24),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Expanded(
+                              child: ElevatedButton.icon(
+                                onPressed: () {
+                                  Navigator.of(context).push(
+                                    MaterialPageRoute(builder: (context) => UserDataScreen()),
+                                  );
+                                },
+                                icon: Icon(Icons.person),
+                                label: Text('Meus Dados'),
+                                style: ElevatedButton.styleFrom(
+                                  padding: EdgeInsets.symmetric(vertical: 24),
+                                ),
+                              ),
                             ),
-                          ),
+                            SizedBox(width: 15),
+                            Expanded(
+                              child: ElevatedButton.icon(
+                                onPressed: () {
+                                  Navigator.of(context).push(
+                                    MaterialPageRoute(builder: (context) => TeamScreen()),
+                                  );
+                                },
+                                icon: Icon(Icons.group),
+                                label: Text('Minha Equipe'),
+                                style: ElevatedButton.styleFrom(
+                                  padding: EdgeInsets.symmetric(vertical: 24),
+                                ),
+                              ),
+                            ),
+                          ],
                         ),
-                        SizedBox(width: 15),
-                        Expanded(
+                        SizedBox(height: 15),
+                        SizedBox(
+                          width: double.infinity,
                           child: ElevatedButton.icon(
                             onPressed: () {
-                              Navigator.of(context).push(
-                                MaterialPageRoute(builder: (context) => TeamScreen()),
-                              );
+                              if (tpLogin == 'admin') {
+                                Navigator.of(context).push(
+                                  MaterialPageRoute(builder: (context) => CriarUsuarioScreen()),
+                                );
+                              } else {
+                                Navigator.of(context).push(
+                                  MaterialPageRoute(builder: (context) => RegistrarPontoScreen()),
+                                );
+                              }
                             },
-                            icon: Icon(Icons.group),
-                            label: Text('Minha Equipe'),
+
+                            icon: Icon(tpLogin == 'admin' ? Icons.person_add : Icons.camera_alt),
+                            label: Text(tpLogin == 'admin' ? 'Criar Usuário' : 'Registrar Ponto'),
                             style: ElevatedButton.styleFrom(
-                              padding: EdgeInsets.symmetric(vertical: 24),
+                              padding: EdgeInsets.symmetric(vertical: 28),
+                              textStyle: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                             ),
                           ),
                         ),
                       ],
-                    ),
-                    SizedBox(height: 15),
-                    SizedBox(
-                      width: double.infinity,
-                      child: ElevatedButton.icon(
-                        onPressed: () {
-                          Navigator.of(context).push(
-                            MaterialPageRoute(builder: (context) => RegistrarPontoScreen()),
-                          );
-                        },
-                        icon: Icon(Icons.fingerprint),
-                        label: Text('Registrar Ponto'),
-                        style: ElevatedButton.styleFrom(
-                          padding: EdgeInsets.symmetric(vertical: 28),
-                          textStyle: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                        ),
-                      ),
-                    ),
-                  ],
+                    );
+                  },
                 ),
               ),
             ),
@@ -113,5 +128,10 @@ class _HomeScreenState extends State<HomeScreen> {
         ),
       ),
     );
+  }
+
+  Future<String?> _getTpLogin() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getString('tp_login');
   }
 }

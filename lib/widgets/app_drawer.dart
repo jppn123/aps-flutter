@@ -6,6 +6,8 @@ import '../screens/home_screen.dart';
 import '../screens/registrar_ponto_screen.dart';
 import '../screens/user_data_screen.dart';
 import '../screens/team_screen.dart';
+import '../screens/criar_usuario_screen.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class AppDrawer extends StatelessWidget {
   final VoidCallback? onLogout;
@@ -15,70 +17,86 @@ class AppDrawer extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Drawer(
-      child: ListView(
-        padding: EdgeInsets.zero,
-        children: [
-          DrawerHeader(
-            decoration: BoxDecoration(
-              color: Theme.of(context).primaryColor,
-            ),
-            child: Text(
-              'Bem-vindo!',
-              style: TextStyle(
-                color: Colors.white,
-                fontSize: 24,
+      child: FutureBuilder<String?>(
+        future: _getTpLogin(),
+        builder: (context, snapshot) {
+          final tpLogin = snapshot.data;
+          return ListView(
+            padding: EdgeInsets.zero,
+            children: [
+              DrawerHeader(
+                decoration: BoxDecoration(
+                  color: Theme.of(context).primaryColor,
+                ),
+                child: Text(
+                  'Bem-vindo!',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 24,
+                  ),
+                ),
               ),
-            ),
-          ),
-          ListTile(
-            leading: Icon(Icons.home),
-            title: Text('Início'),
-            onTap: () {
-              Navigator.of(context).pushReplacement(
-                MaterialPageRoute(builder: (context) => HomeScreen()),
-              );
-            },
-          ),
-          ListTile(
-            leading: Icon(Icons.person),
-            title: Text('Meus Dados'),
-            onTap: () {
-              Navigator.of(context).pushReplacement(
-                MaterialPageRoute(builder: (context) => UserDataScreen()),
-              );
-            },
-          ),
-          ListTile(
-            leading: Icon(Icons.fingerprint),
-            title: Text('Registrar Ponto'),
-            onTap: () {
-              Navigator.of(context).pushReplacement(
-                MaterialPageRoute(builder: (context) => RegistrarPontoScreen()),
-              );
-            },
-          ),
-          
-          ListTile(
-            leading: Icon(Icons.group),
-            title: Text('Minha Equipe'),
-            onTap: () {
-              Navigator.of(context).pushReplacement(
-                MaterialPageRoute(builder: (context) => TeamScreen()),
-              );
-            },
-          ),
-          ListTile(
-            leading: Icon(Icons.logout),
-            title: Text('Sair'),
-            onTap: () {
-              Navigator.of(context).pushAndRemoveUntil(
-                MaterialPageRoute(builder: (context) => LoginScreen()),
-                (route) => false,
-              );
-            },
-          ),
-        ],
+              ListTile(
+                leading: Icon(Icons.home),
+                title: Text('Início'),
+                onTap: () {
+                  Navigator.of(context).pushReplacement(
+                    MaterialPageRoute(builder: (context) => HomeScreen()),
+                  );
+                },
+              ),
+              ListTile(
+                leading: Icon(Icons.person),
+                title: Text('Meus Dados'),
+                onTap: () {
+                  Navigator.of(context).pushReplacement(
+                    MaterialPageRoute(builder: (context) => UserDataScreen()),
+                  );
+                },
+              ),
+              ListTile(
+                leading: Icon(tpLogin == 'admin' ? Icons.person_add : Icons.camera_alt),
+                title: Text(tpLogin == 'admin' ? 'Criar Usuário' : 'Registrar Ponto'),
+                onTap: () {
+                  if (tpLogin == 'admin') {
+                    Navigator.of(context).pushReplacement(
+                      MaterialPageRoute(builder: (context) => CriarUsuarioScreen()),
+                    );
+                  } else {
+                    Navigator.of(context).pushReplacement(
+                      MaterialPageRoute(builder: (context) => RegistrarPontoScreen()),
+                    );
+                  }
+                },
+              ),
+              ListTile(
+                leading: Icon(Icons.group),
+                title: Text('Minha Equipe'),
+                onTap: () {
+                  Navigator.of(context).pushReplacement(
+                    MaterialPageRoute(builder: (context) => TeamScreen()),
+                  );
+                },
+              ),
+              ListTile(
+                leading: Icon(Icons.logout),
+                title: Text('Sair'),
+                onTap: () {
+                  Navigator.of(context).pushAndRemoveUntil(
+                    MaterialPageRoute(builder: (context) => LoginScreen()),
+                    (route) => false,
+                  );
+                },
+              ),
+            ],
+          );
+        },
       ),
     );
+  }
+
+  Future<String?> _getTpLogin() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getString('tp_login');
   }
 } 

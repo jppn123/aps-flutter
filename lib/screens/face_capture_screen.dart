@@ -3,6 +3,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:camera/camera.dart';
 import 'dart:io';
 import '../services/face_service.dart';
+import '../services/auth_service.dart';
 import '../widgets/app_drawer.dart';
 import 'package:provider/provider.dart';
 import '../providers/auth_provider.dart';
@@ -27,6 +28,7 @@ class FaceCaptureScreen extends StatefulWidget {
 class _FaceCaptureScreenState extends State<FaceCaptureScreen> with WidgetsBindingObserver {
   final ImagePicker _picker = ImagePicker();
   final FaceService _faceService = FaceService();
+  final AuthService _authService = AuthService();
   bool _isLoading = false;
   File? _capturedImage;
   CameraController? _cameraController;

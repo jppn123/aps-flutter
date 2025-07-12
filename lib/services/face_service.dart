@@ -161,6 +161,8 @@ class FaceService {
         print('✅ Login facial realizado com sucesso usando InsightFace');
         // Salvar o token retornado pelo backend
         await _authService.saveToken(token);
+        await _authService.validarToken(token);
+
         return token;
       } else {
         final error = jsonDecode(responseBody);
