@@ -11,7 +11,6 @@ class UserService {
     required String tipo,
     String senha = '12345678',
   }) async {
-    // Obter token do usuário admin
     final prefs = await SharedPreferences.getInstance();
     final token = prefs.getString(AuthService.tokenKey);
     
@@ -46,7 +45,6 @@ class UserService {
     required String cpf,
     required int idLogin,
   }) async {
-    // Obter token do usuário admin
     final prefs = await SharedPreferences.getInstance();
     final token = prefs.getString(AuthService.tokenKey);
     

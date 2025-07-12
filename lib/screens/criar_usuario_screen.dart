@@ -92,7 +92,6 @@ class _CriarUsuarioScreenState extends State<CriarUsuarioScreen> {
             backgroundColor: Colors.green,
           ),
         );
-        // Limpar formulário e voltar ao estado inicial
         _emailController.clear();
         _nomeController.clear();
         _cpfController.clear();
@@ -146,7 +145,6 @@ class _CriarUsuarioScreenState extends State<CriarUsuarioScreen> {
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               if (!_loginCriado) ...[
-                // Primeiro passo: Criar login
                 TextFormField(
                   controller: _emailController,
                   decoration: InputDecoration(labelText: 'Email do Usuário'),
@@ -179,7 +177,6 @@ class _CriarUsuarioScreenState extends State<CriarUsuarioScreen> {
                   },
                 ),
               ] else ...[
-                // Segundo passo: Criar usuário
                 TextFormField(
                   controller: _nomeController,
                   decoration: InputDecoration(labelText: 'Nome do Usuário'),

@@ -129,11 +129,10 @@ class _FaceCaptureScreenState extends State<FaceCaptureScreen> with WidgetsBindi
       body: SingleChildScrollView(
         child: Column(
           children: [
-            // Área de captura com câmera em tempo real
             LayoutBuilder(
               builder: (context, constraints) {
-                final double previewWidth = constraints.maxWidth - 32; // 16 de margem de cada lado
-                final double aspectRatio = 3 / 4; // Proporção comum de câmera frontal
+                final double previewWidth = constraints.maxWidth - 32;
+                final double aspectRatio = 3 / 4;
                 final double previewHeight = previewWidth / aspectRatio;
                 return Column(
                   children: [
@@ -285,7 +284,6 @@ class _FaceCaptureScreenState extends State<FaceCaptureScreen> with WidgetsBindi
                         ),
                       ),
                     ),
-                    // Botão de captura fora da área da câmera
                     if (_isCameraInitialized && _capturedImage == null)
                       Padding(
                         padding: const EdgeInsets.only(top: 16.0, bottom: 8.0),
@@ -311,12 +309,10 @@ class _FaceCaptureScreenState extends State<FaceCaptureScreen> with WidgetsBindi
               },
             ),
             
-            // Área de controles
             Container(
               padding: EdgeInsets.all(16),
               child: Column(
                 children: [
-                  // Instruções detalhadas
                   Container(
                     padding: EdgeInsets.all(16),
                     decoration: BoxDecoration(
@@ -346,7 +342,6 @@ class _FaceCaptureScreenState extends State<FaceCaptureScreen> with WidgetsBindi
                   
                   SizedBox(height: 16),
                   
-                  // Botões de ação
                   if (_capturedImage != null)
                     Row(
                       children: [
@@ -380,7 +375,6 @@ class _FaceCaptureScreenState extends State<FaceCaptureScreen> with WidgetsBindi
                       ],
                     ),
                   
-                  // Espaço extra no final para evitar overflow
                   SizedBox(height: 20),
                 ],
               ),
@@ -414,34 +408,27 @@ class _FaceCaptureScreenState extends State<FaceCaptureScreen> with WidgetsBindi
     });
 
     try {
-      // Capturar imagem
       final image = await _cameraController!.takePicture();
       if (image == null) {
         throw Exception('Falha ao capturar imagem');
       }
 
-      // Mostrar feedback de processamento
       setState(() {
         _processingMessage = widget.isRegistration 
           ? 'Processando cadastro facial...'
           : 'Processando reconhecimento facial...';
       });
 
-      // Processar baseado no tipo (login ou registro)
       if (widget.isRegistration) {
-        // Cadastrar face
         await _faceService.registerFace(File(image.path));
         
-        // Sucesso
         setState(() {
           _successMessage = 'Face cadastrada com sucesso!';
           _processingMessage = '';
         });
 
-        // Aguardar um pouco para mostrar a mensagem de sucesso
         await Future.delayed(Duration(milliseconds: 1500));
 
-        // Voltar para a tela anterior
         if (mounted) {
           Navigator.pop(context, true);
           if (widget.onSuccess != null) {
@@ -449,19 +436,15 @@ class _FaceCaptureScreenState extends State<FaceCaptureScreen> with WidgetsBindi
           }
         }
       } else {
-        // Fazer login facial
         final token = await _faceService.loginFace(File(image.path));
         
-        // Sucesso
         setState(() {
           _successMessage = 'Login realizado com sucesso!';
           _processingMessage = '';
         });
 
-        // Aguardar um pouco para mostrar a mensagem de sucesso
         await Future.delayed(Duration(milliseconds: 1500));
 
-        // Voltar para a tela anterior
         if (mounted) {
           Navigator.pop(context, true);
           if (widget.onSuccess != null) {
@@ -473,7 +456,6 @@ class _FaceCaptureScreenState extends State<FaceCaptureScreen> with WidgetsBindi
     } catch (e) {
       String errorMessage = e.toString().replaceAll('Exception: ', '');
       
-      // Melhorar mensagens de erro específicas do InsightFace
       if (errorMessage.contains('Nenhum rosto detectado')) {
         errorMessage = 'Nenhum rosto detectado. Certifique-se de que:\n• Sua face está visível na câmera\n• A iluminação está boa\n• Você está centralizado no frame\n• Não há obstáculos na frente do rosto';
       } else if (errorMessage.contains('Erro ao processar imagem')) {
@@ -495,7 +477,6 @@ class _FaceCaptureScreenState extends State<FaceCaptureScreen> with WidgetsBindi
         _processingMessage = '';
       });
       
-      // Chamar callback de erro
       if (widget.onError != null) {
         widget.onError!(errorMessage);
       }
@@ -522,10 +503,8 @@ class _FaceCaptureScreenState extends State<FaceCaptureScreen> with WidgetsBindi
         _showSuccess('Login facial realizado com sucesso!');
       }
       
-      // Aguardar um pouco para mostrar a mensagem
       await Future.delayed(Duration(seconds: 2));
       
-      // Fechar a tela e chamar callback
       Navigator.of(context).pop();
       if (widget.onSuccess != null) {
         widget.onSuccess!('Sucesso');
@@ -565,14 +544,12 @@ class _FaceCaptureScreenState extends State<FaceCaptureScreen> with WidgetsBindi
   Widget _buildPositioningOverlay() {
     return Stack(
       children: [
-        // Guias visuais para posicionamento
         Positioned.fill(
           child: CustomPaint(
             painter: FaceGuidePainter(),
           ),
         ),
         
-        // Overlay com instruções
         Positioned(
           bottom: 0,
           left: 20,
@@ -601,7 +578,6 @@ class _FaceCaptureScreenState extends State<FaceCaptureScreen> with WidgetsBindi
   }
 }
 
-// CustomPainter para desenhar os guias visuais
 class FaceGuidePainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
@@ -610,7 +586,6 @@ class FaceGuidePainter extends CustomPainter {
       ..style = PaintingStyle.stroke
       ..strokeWidth = 3;
 
-    // Desenhar oval para guiar posicionamento
     final center = Offset(size.width / 2, size.height / 2);
     final radiusX = size.width * 0.35;
     final radiusY = size.height * 0.4;
@@ -620,7 +595,6 @@ class FaceGuidePainter extends CustomPainter {
       paint,
     );
 
-    // Desenhar pontos de referência
     final dotPaint = Paint()
       ..color = Colors.blue
       ..style = PaintingStyle.fill;

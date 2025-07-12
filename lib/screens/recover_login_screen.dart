@@ -30,7 +30,6 @@ class _RecoverLoginScreenState extends State<RecoverLoginScreen> {
     try {
       await _recoverService.enviarEmail(_emailController.text);
       setState(() {
-        // _token = token;
         _emailSent = true;
       });
     } catch (e) {

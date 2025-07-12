@@ -12,7 +12,6 @@ class UserDataScreen extends StatefulWidget {
 }
 
 class _UserDataScreenState extends State<UserDataScreen> {
-  // Mock dos dados do usuário
   final Map<String, String> userData = const {
     'NOME': 'João da Silva',
     'CPF': '123.456.789-00',
@@ -131,7 +130,8 @@ class _UserDataScreenState extends State<UserDataScreen> {
                 icon: Icon(Icons.face),
                 label: Text(_isFaceRegistered ? 'Face já cadastrada' : 'Cadastrar Face'),
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.purple,
+                  backgroundColor: Colors.blue,
+                  foregroundColor: Colors.white,
                   padding: EdgeInsets.symmetric(vertical: 16, horizontal: 32),
                 ),
               ),

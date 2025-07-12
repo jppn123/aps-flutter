@@ -24,7 +24,7 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   @override
   Widget build(BuildContext context) {
-    final String userName = 'João da Silva'; // Mock do nome do usuário
+    final String userName = 'João da Silva';
     return Scaffold(
       appBar: AppBar(
         title: Text('Página Inicial'),

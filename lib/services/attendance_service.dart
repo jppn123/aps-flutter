@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:http/http.dart' as http;
 import 'package:geolocator/geolocator.dart';
 import 'auth_service.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class AttendanceService {
   final AuthService _authService = AuthService();
@@ -48,6 +49,35 @@ class AttendanceService {
 
       if (response.statusCode != 200) {
         throw Exception('Erro ao registrar ponto: ${response.body}');
+      }
+    } catch (e) {
+      throw Exception('Erro ao registrar ponto: $e');
+    }
+  }
+
+  Future<void> registrarPonto() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final token = prefs.getString(AuthService.tokenKey);
+      
+      if (token == null) {
+        throw Exception('Token de autenticação não encontrado');
+      }
+
+      final response = await http.post(
+        Uri.parse('${AuthService.baseUrl}/ponto/registrar'),
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $token',
+        },
+      );
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        print('Ponto registrado com sucesso: ${data['message']}');
+      } else {
+        final error = jsonDecode(response.body);
+        throw Exception(error['detail'] ?? 'Erro ao registrar ponto');
       }
     } catch (e) {
       throw Exception('Erro ao registrar ponto: $e');

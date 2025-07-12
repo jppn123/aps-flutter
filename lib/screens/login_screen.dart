@@ -97,9 +97,8 @@ class _LoginScreenState extends State<LoginScreen> {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                SizedBox(height: 100), // Espaço extra no topo
+                SizedBox(height: 100),
 
-                // Login Tradicional
                 TextFormField(
                   controller: _emailController,
                   decoration: InputDecoration(labelText: 'Email'),
@@ -157,7 +156,6 @@ class _LoginScreenState extends State<LoginScreen> {
                 ),
                 
                 SizedBox(height: 24),
-                // Login Facial
                 Container(
                   width: double.infinity,
                   child: ElevatedButton.icon(
@@ -166,11 +164,12 @@ class _LoginScreenState extends State<LoginScreen> {
                     label: Text(_isLoading ? 'Processando...' : 'Login com Face'),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.blue,
+                      foregroundColor: Colors.white,
                       padding: EdgeInsets.symmetric(vertical: 16),
                     ),
                   ),
                 ),
-                SizedBox(height: 20), // Espaço extra no final
+                SizedBox(height: 20),
               ],
             ),
           ),

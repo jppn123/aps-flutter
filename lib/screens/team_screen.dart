@@ -5,7 +5,6 @@ import '../providers/auth_provider.dart';
 import 'login_screen.dart';
 
 class TeamScreen extends StatelessWidget {
-  // Mock do nome da equipe
   final String teamName = 'Equipe Alpha';
 
   @override
