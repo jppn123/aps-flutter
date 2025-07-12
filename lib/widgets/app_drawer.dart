@@ -2,6 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/auth_provider.dart';
 import '../screens/login_screen.dart';
+import '../screens/home_screen.dart';
+import '../screens/registrar_ponto_screen.dart';
+import '../screens/user_data_screen.dart';
+import '../screens/team_screen.dart';
 
 class AppDrawer extends StatelessWidget {
   final VoidCallback? onLogout;
@@ -30,14 +34,37 @@ class AppDrawer extends StatelessWidget {
             leading: Icon(Icons.home),
             title: Text('Início'),
             onTap: () {
-              Navigator.pushReplacementNamed(context, '/home');
+              Navigator.of(context).pushReplacement(
+                MaterialPageRoute(builder: (context) => HomeScreen()),
+              );
             },
           ),
           ListTile(
             leading: Icon(Icons.person),
-            title: Text('Perfil'),
+            title: Text('Meus Dados'),
             onTap: () {
-              Navigator.pushNamed(context, '/profile');
+              Navigator.of(context).pushReplacement(
+                MaterialPageRoute(builder: (context) => UserDataScreen()),
+              );
+            },
+          ),
+          ListTile(
+            leading: Icon(Icons.fingerprint),
+            title: Text('Registrar Ponto'),
+            onTap: () {
+              Navigator.of(context).pushReplacement(
+                MaterialPageRoute(builder: (context) => RegistrarPontoScreen()),
+              );
+            },
+          ),
+          
+          ListTile(
+            leading: Icon(Icons.group),
+            title: Text('Minha Equipe'),
+            onTap: () {
+              Navigator.of(context).pushReplacement(
+                MaterialPageRoute(builder: (context) => TeamScreen()),
+              );
             },
           ),
           ListTile(
