@@ -8,6 +8,8 @@ import '../services/attendance_service.dart';
 import '../services/face_service.dart';
 import '../providers/auth_provider.dart';
 import 'face_capture_screen.dart';
+import '../widgets/app_drawer.dart';
+import 'login_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   @override
@@ -261,16 +263,20 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Registro de Ponto'),
+        title: Text('Página Inicial'),
         actions: [
           IconButton(
             icon: Icon(Icons.logout),
             onPressed: () {
-              context.read<AuthProvider>().logout();
+              Navigator.of(context).pushAndRemoveUntil(
+                MaterialPageRoute(builder: (context) => LoginScreen()),
+                (route) => false,
+              );
             },
           ),
         ],
       ),
+      drawer: AppDrawer(),
       body: SingleChildScrollView(
         child: Padding(
           padding: EdgeInsets.all(16.0),

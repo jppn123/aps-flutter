@@ -60,6 +60,10 @@ class _LoginScreenState extends State<LoginScreen> {
           isRegistration: false,
           onSuccess: (message) {
             context.read<AuthProvider>().checkAuth();
+            Navigator.of(context).pushAndRemoveUntil(
+              MaterialPageRoute(builder: (context) => HomeScreen()),
+              (route) => false,
+            );
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
                 content: Text('Login facial realizado com sucesso!'),
@@ -93,38 +97,8 @@ class _LoginScreenState extends State<LoginScreen> {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                SizedBox(height: 20), // Espaço extra no topo
-                
-                // Login Facial
-                Container(
-                  width: double.infinity,
-                  child: ElevatedButton.icon(
-                    onPressed: _isLoading ? null : _showFaceInstructions,
-                    icon: Icon(_isLoading ? Icons.hourglass_empty : Icons.face),
-                    label: Text(_isLoading ? 'Processando...' : 'Login com Face'),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.blue,
-                      padding: EdgeInsets.symmetric(vertical: 16),
-                    ),
-                  ),
-                ),
-                
-                SizedBox(height: 24),
-                
-                // Divisor
-                Row(
-                  children: [
-                    Expanded(child: Divider()),
-                    Padding(
-                      padding: EdgeInsets.symmetric(horizontal: 16),
-                      child: Text('ou', style: TextStyle(color: Colors.grey)),
-                    ),
-                    Expanded(child: Divider()),
-                  ],
-                ),
-                
-                SizedBox(height: 24),
-                
+                SizedBox(height: 100), // Espaço extra no topo
+
                 // Login Tradicional
                 TextFormField(
                   controller: _emailController,
@@ -148,6 +122,18 @@ class _LoginScreenState extends State<LoginScreen> {
                     return null;
                   },
                 ),
+                
+                SizedBox(height: 30),
+                Container(
+                  width: double.infinity,
+                  child: ElevatedButton(
+                    onPressed: _isLoading ? null : _login,
+                    child: Text(_isLoading ? 'Entrando...' : 'Entrar'),
+                    style: ElevatedButton.styleFrom(
+                      padding: EdgeInsets.symmetric(vertical: 16),
+                    ),
+                  ),
+                ),
                 SizedBox(height: 24),
                 TextButton(
                   onPressed: () {
@@ -158,13 +144,28 @@ class _LoginScreenState extends State<LoginScreen> {
                   },
                   child: Text('Esqueci a senha'),
                 ),
+                SizedBox(height: 24),                // Divisor
+                Row(
+                  children: [
+                    Expanded(child: Divider()),
+                    Padding(
+                      padding: EdgeInsets.symmetric(horizontal: 16),
+                      child: Text('ou', style: TextStyle(color: Colors.grey)),
+                    ),
+                    Expanded(child: Divider()),
+                  ],
+                ),
+                
                 SizedBox(height: 24),
+                // Login Facial
                 Container(
                   width: double.infinity,
-                  child: ElevatedButton(
-                    onPressed: _isLoading ? null : _login,
-                    child: Text(_isLoading ? 'Entrando...' : 'Entrar'),
+                  child: ElevatedButton.icon(
+                    onPressed: _isLoading ? null : _showFaceInstructions,
+                    icon: Icon(_isLoading ? Icons.hourglass_empty : Icons.face),
+                    label: Text(_isLoading ? 'Processando...' : 'Login com Face'),
                     style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.blue,
                       padding: EdgeInsets.symmetric(vertical: 16),
                     ),
                   ),

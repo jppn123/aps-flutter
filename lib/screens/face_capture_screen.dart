@@ -3,6 +3,11 @@ import 'package:image_picker/image_picker.dart';
 import 'package:camera/camera.dart';
 import 'dart:io';
 import '../services/face_service.dart';
+import '../widgets/app_drawer.dart';
+import 'package:provider/provider.dart';
+import '../providers/auth_provider.dart';
+import 'login_screen.dart';
+import 'dart:math' as math;
 
 class FaceCaptureScreen extends StatefulWidget {
   final bool isRegistration;
@@ -105,181 +110,203 @@ class _FaceCaptureScreenState extends State<FaceCaptureScreen> with WidgetsBindi
       appBar: AppBar(
         title: Text(widget.isRegistration ? 'Cadastrar Face' : 'Login Facial'),
         backgroundColor: widget.isRegistration ? Colors.purple : Colors.blue,
+        actions: [
+          if(widget.isRegistration)
+            IconButton(
+              icon: Icon(Icons.logout),
+              onPressed: () {
+                Navigator.of(context).pushAndRemoveUntil(
+                  MaterialPageRoute(builder: (context) => LoginScreen()),
+                  (route) => false,
+                );
+              },
+            ),
+          
+        ],
       ),
       body: SingleChildScrollView(
         child: Column(
           children: [
             // Área de captura com câmera em tempo real
-            Container(
-              height: MediaQuery.of(context).size.height * 0.5, // 50% da altura da tela
-              margin: EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                border: Border.all(color: Colors.grey, width: 2),
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: ClipRRect(
-                borderRadius: BorderRadius.circular(10),
-                child: Stack(
+            LayoutBuilder(
+              builder: (context, constraints) {
+                final double previewWidth = constraints.maxWidth - 32; // 16 de margem de cada lado
+                final double aspectRatio = 3 / 4; // Proporção comum de câmera frontal
+                final double previewHeight = previewWidth / aspectRatio;
+                return Column(
                   children: [
-                    // Camera preview
-                    if (_cameraController != null && _isCameraInitialized)
-                      CameraPreview(_cameraController!),
-                    
-                    // Overlay com guias de posicionamento
-                    if (_isCameraInitialized)
-                      _buildPositioningOverlay(),
-                    
-                    // Botão de captura
-                    if (_isCameraInitialized)
-                      Positioned(
-                        bottom: 50,
-                        right: 20,
-                        child: FloatingActionButton(
-                          onPressed: _isCapturing ? null : _captureAndRegister,
-                          backgroundColor: widget.isRegistration ? Colors.purple : Colors.blue,
-                          child: _isCapturing 
-                            ? SizedBox(
-                                width: 20,
-                                height: 20,
-                                child: CircularProgressIndicator(
-                                  strokeWidth: 2,
-                                  valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-                                ),
-                              )
-                            : Icon(Icons.camera_alt, color: Colors.white),
-                        ),
+                    Container(
+                      width: previewWidth,
+                      height: previewHeight,
+                      margin: EdgeInsets.symmetric(vertical: 16),
+                      decoration: BoxDecoration(
+                        border: Border.all(color: Colors.grey, width: 2),
+                        borderRadius: BorderRadius.circular(12),
                       ),
-                    
-                    // Loading overlay
-                    if (_isCameraInitializing)
-                      Container(
-                        color: Colors.black54,
-                        child: Center(
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              CircularProgressIndicator(
-                                valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-                              ),
-                              SizedBox(height: 16),
-                              Text(
-                                'Inicializando câmera...',
-                                style: TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 16,
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(10),
+                        child: Stack(
+                          fit: StackFit.expand,
+                          children: [
+                            if (_cameraController != null && _isCameraInitialized)
+                              Transform(
+                                alignment: Alignment.center,
+                                transform: Matrix4.rotationY(math.pi),
+                                child: AspectRatio(
+                                  aspectRatio: aspectRatio,
+                                  child: CameraPreview(_cameraController!),
                                 ),
                               ),
-                            ],
-                          ),
-                        ),
-                      ),
-                    
-                    // Processing overlay
-                    if (_processingMessage.isNotEmpty)
-                      Container(
-                        color: Colors.black54,
-                        child: Center(
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              CircularProgressIndicator(
-                                valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-                              ),
-                              SizedBox(height: 16),
-                              Text(
-                                _processingMessage,
-                                style: TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 16,
-                                ),
-                                textAlign: TextAlign.center,
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-                    
-                    // Success message
-                    if (_successMessage.isNotEmpty)
-                      Container(
-                        color: Colors.green.withOpacity(0.9),
-                        child: Center(
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Icon(
-                                Icons.check_circle,
-                                color: Colors.white,
-                                size: 64,
-                              ),
-                              SizedBox(height: 16),
-                              Text(
-                                _successMessage,
-                                style: TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 18,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                                textAlign: TextAlign.center,
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-                    
-                    // Error message
-                    if (_errorMessage.isNotEmpty)
-                      Positioned(
-                        top: 50,
-                        left: 20,
-                        right: 20,
-                        child: Container(
-                          padding: EdgeInsets.all(16),
-                          decoration: BoxDecoration(
-                            color: Colors.red,
-                            borderRadius: BorderRadius.circular(8),
-                          ),
-                          child: Column(
-                            children: [
-                              Row(
-                                children: [
-                                  Icon(Icons.error, color: Colors.white),
-                                  SizedBox(width: 8),
-                                  Expanded(
-                                    child: Text(
-                                      'Erro',
-                                      style: TextStyle(
-                                        color: Colors.white,
-                                        fontWeight: FontWeight.bold,
-                                        fontSize: 16,
+                            if (_isCameraInitialized)
+                              _buildPositioningOverlay(),
+                            if (_isCameraInitializing)
+                              Container(
+                                color: Colors.black54,
+                                child: Center(
+                                  child: Column(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      CircularProgressIndicator(
+                                        valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
                                       ),
-                                    ),
+                                      SizedBox(height: 16),
+                                      Text(
+                                        'Inicializando câmera...',
+                                        style: TextStyle(
+                                          color: Colors.white,
+                                          fontSize: 16,
+                                        ),
+                                      ),
+                                    ],
                                   ),
-                                  IconButton(
-                                    icon: Icon(Icons.close, color: Colors.white),
-                                    onPressed: () {
-                                      setState(() {
-                                        _errorMessage = '';
-                                      });
-                                    },
-                                  ),
-                                ],
-                              ),
-                              SizedBox(height: 8),
-                              Text(
-                                _errorMessage,
-                                style: TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 14,
                                 ),
                               ),
-                            ],
+                            if (_processingMessage.isNotEmpty)
+                              Container(
+                                color: Colors.black54,
+                                child: Center(
+                                  child: Column(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      CircularProgressIndicator(
+                                        valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                                      ),
+                                      SizedBox(height: 16),
+                                      Text(
+                                        _processingMessage,
+                                        style: TextStyle(
+                                          color: Colors.white,
+                                          fontSize: 16,
+                                        ),
+                                        textAlign: TextAlign.center,
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                            if (_successMessage.isNotEmpty)
+                              Container(
+                                color: Colors.green.withOpacity(0.9),
+                                child: Center(
+                                  child: Column(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      Icon(
+                                        Icons.check_circle,
+                                        color: Colors.white,
+                                        size: 64,
+                                      ),
+                                      SizedBox(height: 16),
+                                      Text(
+                                        _successMessage,
+                                        style: TextStyle(
+                                          color: Colors.white,
+                                          fontSize: 18,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                        textAlign: TextAlign.center,
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                            if (_errorMessage.isNotEmpty)
+                              Positioned(
+                                top: 50,
+                                left: 20,
+                                right: 20,
+                                child: Container(
+                                  padding: EdgeInsets.all(16),
+                                  decoration: BoxDecoration(
+                                    color: Colors.red,
+                                    borderRadius: BorderRadius.circular(8),
+                                  ),
+                                  child: Column(
+                                    children: [
+                                      Row(
+                                        children: [
+                                          Icon(Icons.error, color: Colors.white),
+                                          SizedBox(width: 8),
+                                          Expanded(
+                                            child: Text(
+                                              'Erro',
+                                              style: TextStyle(
+                                                color: Colors.white,
+                                                fontWeight: FontWeight.bold,
+                                                fontSize: 16,
+                                              ),
+                                            ),
+                                          ),
+                                          IconButton(
+                                            icon: Icon(Icons.close, color: Colors.white),
+                                            onPressed: () {
+                                              setState(() {
+                                                _errorMessage = '';
+                                              });
+                                            },
+                                          ),
+                                        ],
+                                      ),
+                                      SizedBox(height: 8),
+                                      Text(
+                                        _errorMessage,
+                                        style: TextStyle(
+                                          color: Colors.white,
+                                          fontSize: 14,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                          ],
+                        ),
+                      ),
+                    ),
+                    // Botão de captura fora da área da câmera
+                    if (_isCameraInitialized && _capturedImage == null)
+                      Padding(
+                        padding: const EdgeInsets.only(top: 16.0, bottom: 8.0),
+                        child: Center(
+                          child: FloatingActionButton(
+                            onPressed: _isCapturing ? null : _captureAndRegister,
+                            backgroundColor: widget.isRegistration ? Colors.purple : Colors.blue,
+                            child: _isCapturing
+                                ? SizedBox(
+                                    width: 20,
+                                    height: 20,
+                                    child: CircularProgressIndicator(
+                                      strokeWidth: 2,
+                                      valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                                    ),
+                                  )
+                                : Icon(Icons.camera_alt, color: Colors.white),
                           ),
                         ),
                       ),
                   ],
-                ),
-              ),
+                );
+              },
             ),
             
             // Área de controles
@@ -545,7 +572,7 @@ class _FaceCaptureScreenState extends State<FaceCaptureScreen> with WidgetsBindi
         
         // Overlay com instruções
         Positioned(
-          bottom: 120,
+          bottom: 0,
           left: 20,
           right: 20,
           child: Container(
@@ -560,7 +587,7 @@ class _FaceCaptureScreenState extends State<FaceCaptureScreen> with WidgetsBindi
                 : 'Posicione sua face dentro da área oval para login',
               style: TextStyle(
                 color: Colors.white,
-                fontSize: 16,
+                fontSize: 14,
                 fontWeight: FontWeight.bold,
               ),
               textAlign: TextAlign.center,
