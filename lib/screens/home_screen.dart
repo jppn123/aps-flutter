@@ -6,6 +6,7 @@ import 'package:geolocator/geolocator.dart';
 import 'package:geocoding/geocoding.dart';
 import '../services/attendance_service.dart';
 import '../services/face_service.dart';
+import '../services/user_service.dart';
 import '../providers/auth_provider.dart';
 import 'face_capture_screen.dart';
 import '../widgets/app_drawer.dart';
@@ -14,6 +15,7 @@ import '../screens/user_data_screen.dart';
 import '../screens/team_screen.dart';
 import '../screens/registrar_ponto_screen.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import '../services/auth_service.dart';
 import 'criar_usuario_screen.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -22,9 +24,43 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
+  final UserService _userService = UserService();
+  String _userName = '';
+  bool _isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadUserName();
+  }
+
+  Future<void> _loadUserName() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final idUsuario = prefs.getString(AuthService.idUsu);
+      
+      if (idUsuario != null) {
+        final userData = await _userService.getUsuario(int.parse(idUsuario));
+        setState(() {
+          _userName = userData['nome'] ?? 'Usuário';
+          _isLoading = false;
+        });
+      } else {
+        setState(() {
+          _userName = 'Usuário';
+          _isLoading = false;
+        });
+      }
+    } catch (e) {
+      setState(() {
+        _userName = 'Usuário';
+        _isLoading = false;
+      });
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
-    final String userName = 'João da Silva';
     return Scaffold(
       appBar: AppBar(
         title: Text('Página Inicial'),
@@ -48,7 +84,7 @@ class _HomeScreenState extends State<HomeScreen> {
           children: [
             SizedBox(height: 30),
             Text(
-              'Olá, $userName',
+              'Olá, ${_isLoading ? '...' : _userName}',
               style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
             ),
             Expanded(

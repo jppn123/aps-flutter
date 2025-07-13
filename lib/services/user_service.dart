@@ -135,4 +135,60 @@ class UserService {
       throw Exception(error['detail'] ?? 'Erro ao atualizar dados do usuário');
     }
   }
+
+  Future<void> atualizarTimeUsuario({
+    required int idUsuario,
+    required int idTime,
+  }) async {
+    final prefs = await SharedPreferences.getInstance();
+    final token = prefs.getString(AuthService.tokenKey);
+    
+    if (token == null) {
+      throw Exception('Token de autenticação não encontrado');
+    }
+
+    final response = await http.put(
+      Uri.parse('$baseUrl/usuario/atualizarTime/$idUsuario'),
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer $token',
+      },
+      body: jsonEncode({
+        'id_time': idTime,
+      }),
+    );
+
+    if (response.statusCode == 200) {
+      final data = jsonDecode(response.body);
+      print('Time do usuário atualizado com sucesso: ${data['message']}');
+    } else {
+      final error = jsonDecode(response.body);
+      throw Exception(error['detail'] ?? 'Erro ao atualizar time do usuário');
+    }
+  }
+
+  Future<Map<String, dynamic>> getUsuarioPorEmail(String email) async {
+    final prefs = await SharedPreferences.getInstance();
+    final token = prefs.getString(AuthService.tokenKey);
+    
+    if (token == null) {
+      throw Exception('Token de autenticação não encontrado');
+    }
+
+    final response = await http.get(
+      Uri.parse('$baseUrl/usuario/getUsuarioPorEmail/$email'),
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer $token',
+      },
+    );
+
+    if (response.statusCode == 200) {
+      final data = jsonDecode(response.body);
+      return data;
+    } else {
+      final error = jsonDecode(response.body);
+      throw Exception(error['detail'] ?? 'Usuário não encontrado');
+    }
+  }
 } 
