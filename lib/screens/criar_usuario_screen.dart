@@ -124,19 +124,21 @@ class _CriarUsuarioScreenState extends State<CriarUsuarioScreen> {
     return Scaffold(
       appBar: AppBar(
         title: Text('Criar Usuário'),
+        automaticallyImplyLeading: !_loginCriado,
         actions: [
-          IconButton(
-            icon: Icon(Icons.logout),
-            onPressed: () {
-              Navigator.of(context).pushAndRemoveUntil(
-                MaterialPageRoute(builder: (context) => LoginScreen()),
-                (route) => false,
-              );
-            },
-          ),
+          if (!_loginCriado)
+            IconButton(
+              icon: Icon(Icons.logout),
+              onPressed: () {
+                Navigator.of(context).pushAndRemoveUntil(
+                  MaterialPageRoute(builder: (context) => LoginScreen()),
+                  (route) => false,
+                );
+              },
+            ),
         ],
       ),
-      drawer: AppDrawer(),
+      drawer: _loginCriado ? null : AppDrawer(),
       body: Padding(
         padding: const EdgeInsets.all(24.0),
         child: Form(

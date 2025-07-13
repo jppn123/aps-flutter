@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../services/team_service.dart';
 import '../services/user_service.dart';
 import 'login_screen.dart';
+import 'user_funcionario_details_screen.dart';
 
 class TeamDetailsScreen extends StatefulWidget {
   final Map<String, dynamic> time;
@@ -118,9 +119,10 @@ class _TeamDetailsScreenState extends State<TeamDetailsScreen> {
       
       await _loadData();
     } catch (e) {
+      final msg = e.toString().replaceAll('Exception: ', '');
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('Erro ao adicionar usuário: $e'),
+          content: Text('Erro ao adicionar usuário: ' + msg),
           backgroundColor: Colors.red,
           duration: Duration(seconds: 5),
         ),
@@ -355,25 +357,16 @@ class _TeamDetailsScreenState extends State<TeamDetailsScreen> {
                                   ),
                                 ),
                                 title: Text(usuario['nome'] ?? 'Sem nome'),
-                                subtitle: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    if (usuario['tipo'] != null) ...[
-                                      Text(
+                                subtitle: usuario['tipo'] != null
+                                    ? Text(
                                         _getTipoExibicao(usuario['tipo']),
                                         style: TextStyle(
                                           fontSize: 12,
                                           color: Colors.grey[600],
                                           fontStyle: FontStyle.italic,
                                         ),
-                                      ),
-                                    ],
-                                    if (usuario['cpf'] != null)
-                                      Text('CPF: ${usuario['cpf']}'),
-                                    if (usuario['telefone'] != null)
-                                      Text('Telefone: ${usuario['telefone']}'),
-                                  ],
-                                ),
+                                      )
+                                    : null,
                                 trailing: FutureBuilder<bool>(
                                   future: _teamService.podeGerenciarTime(widget.time['id']),
                                   builder: (context, snapshot) {
@@ -404,9 +397,28 @@ class _TeamDetailsScreenState extends State<TeamDetailsScreen> {
                                             return SizedBox.shrink();
                                           }
                                           
-                                          return IconButton(
-                                            icon: Icon(Icons.remove_circle, color: Colors.red),
-                                            onPressed: () => _removerUsuario(usuario),
+                                          return Row(
+                                            mainAxisSize: MainAxisSize.min,
+                                            children: [
+                                              if ((tipoUsuarioLogado == 'admin' && idUsuarioLogado != idUsuarioMembro) ||
+                                                  (tipoUsuarioLogado == 'coord' && tipoUsuarioMembro == 'func'))
+                                                IconButton(
+                                                  icon: Icon(Icons.info, color: Colors.blue),
+                                                  tooltip: 'Ver dados do usuário',
+                                                  onPressed: () {
+                                                    Navigator.push(
+                                                      context,
+                                                      MaterialPageRoute(
+                                                        builder: (context) => UserFuncionarioDetailsScreen(usuario: usuario),
+                                                      ),
+                                                    );
+                                                  },
+                                                ),
+                                              IconButton(
+                                                icon: Icon(Icons.remove_circle, color: Colors.red),
+                                                onPressed: () => _removerUsuario(usuario),
+                                              ),
+                                            ],
                                           );
                                         },
                                       );
@@ -415,6 +427,22 @@ class _TeamDetailsScreenState extends State<TeamDetailsScreen> {
                                     }
                                   },
                                 ),
+                                onTap: () async {
+                                  final podeGerenciar = await _teamService.podeGerenciarTime(widget.time['id']);
+                                  final idUsuarioLogado = await _teamService.getIdUsuario();
+                                  final tipoUsuarioLogado = _tipoUsuario;
+                                  final idUsuarioMembro = usuario['id'];
+                                  final tipoUsuarioMembro = usuario['tipo'];
+                                  if ((tipoUsuarioLogado == 'admin' && idUsuarioLogado != idUsuarioMembro) ||
+                                      (tipoUsuarioLogado == 'coord' && tipoUsuarioMembro == 'func')) {
+                                    Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (context) => UserFuncionarioDetailsScreen(usuario: usuario),
+                                      ),
+                                    );
+                                  }
+                                },
                               ),
                             );
                           }).toList(),
