@@ -143,7 +143,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   },
                   child: Text('Esqueci a senha'),
                 ),
-                SizedBox(height: 24),                // Divisor
+                SizedBox(height: 24),
                 Row(
                   children: [
                     Expanded(child: Divider()),

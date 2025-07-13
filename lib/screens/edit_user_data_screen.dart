@@ -96,9 +96,8 @@ class _EditUserDataScreenState extends State<EditUserDataScreen> {
   }
 
   Future<void> _selecionarData() async {
-    DateTime dataInicial = DateTime.now().subtract(Duration(days: 6570)); // 18 anos atrás como fallback
+    DateTime dataInicial = DateTime.now().subtract(Duration(days: 6570));
     
-    // Tentar converter a data atual do campo para usar como data inicial
     if (_dataNascimentoController.text.isNotEmpty) {
       try {
         final partes = _dataNascimentoController.text.split('/');
@@ -109,7 +108,6 @@ class _EditUserDataScreenState extends State<EditUserDataScreen> {
           dataInicial = DateTime(ano, mes, dia);
         }
       } catch (e) {
-        // Se não conseguir converter, usa a data padrão
         print('Erro ao converter data: $e');
       }
     }

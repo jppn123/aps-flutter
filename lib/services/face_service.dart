@@ -111,7 +111,7 @@ class FaceService {
       );
 
       
-      String contentType = 'image/jpeg'; // padrão
+      String contentType = 'image/jpeg';
       String extension = imageFile.path.split('.').last.toLowerCase();
       if (extension == 'png') {
         contentType = 'image/png';
@@ -170,7 +170,7 @@ class FaceService {
       }
     } catch (e) {
       if (e.toString().contains('Exception:')) {
-        throw e; // Re-throw se já é uma Exception formatada
+        throw e;
       }
       throw Exception('Erro no login facial: $e');
     }

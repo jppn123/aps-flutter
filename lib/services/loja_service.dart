@@ -181,4 +181,70 @@ class LojaService {
       throw Exception(error['detail'] ?? 'Erro ao remover vínculo usuário-loja');
     }
   }
+
+  Future<List<Map<String, dynamic>>> getAgendaUsuarioLoja({required int idUsuario, required int idLoja}) async {
+    final prefs = await SharedPreferences.getInstance();
+    final token = prefs.getString(AuthService.tokenKey);
+    if (token == null) {
+      throw Exception('Token de autenticação não encontrado');
+    }
+    final response = await http.get(
+      Uri.parse('$baseUrl/usuario-loja-agenda/getAgendaUsuarioLoja/$idUsuario/$idLoja'),
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer $token',
+      },
+    );
+    if (response.statusCode == 200) {
+      final data = jsonDecode(response.body);
+      return List<Map<String, dynamic>>.from(data);
+    } else {
+      final error = jsonDecode(response.body);
+      throw Exception(error['detail'] ?? 'Erro ao buscar agenda do usuário na loja');
+    }
+  }
+
+  Future<void> adicionarAgendaUsuarioLoja({required int idUsuario, required int idLoja, required int diaSemana, required int periodo}) async {
+    final prefs = await SharedPreferences.getInstance();
+    final token = prefs.getString(AuthService.tokenKey);
+    if (token == null) {
+      throw Exception('Token de autenticação não encontrado');
+    }
+    final response = await http.post(
+      Uri.parse('$baseUrl/usuario-loja-agenda/adicionar'),
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer $token',
+      },
+      body: jsonEncode({
+        'id_usuario': idUsuario,
+        'id_loja': idLoja,
+        'dia_semana': diaSemana,
+        'periodo': periodo,
+      }),
+    );
+    if (response.statusCode != 200 && response.statusCode != 201) {
+      final error = jsonDecode(response.body);
+      throw Exception(error['detail'] ?? 'Erro ao adicionar agenda');
+    }
+  }
+
+  Future<void> removerAgendaUsuarioLoja({required int idUsuario, required int idLoja, required int diaSemana, required int periodo}) async {
+    final prefs = await SharedPreferences.getInstance();
+    final token = prefs.getString(AuthService.tokenKey);
+    if (token == null) {
+      throw Exception('Token de autenticação não encontrado');
+    }
+    final response = await http.delete(
+      Uri.parse('$baseUrl/usuario-loja-agenda/remover?id_usuario=$idUsuario&id_loja=$idLoja&dia_semana=$diaSemana&periodo=$periodo'),
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer $token',
+      },
+    );
+    if (response.statusCode != 200) {
+      final error = jsonDecode(response.body);
+      throw Exception(error['detail'] ?? 'Erro ao remover agenda');
+    }
+  }
 } 

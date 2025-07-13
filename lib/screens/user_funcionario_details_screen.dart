@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'dart:typed_data';
 import '../services/user_service.dart';
 import '../services/loja_service.dart';
+import 'historico_pontos_funcionario_screen.dart';
 
 class UserFuncionarioDetailsScreen extends StatefulWidget {
   final Map<String, dynamic> usuario;
@@ -21,6 +22,8 @@ class _UserFuncionarioDetailsScreenState extends State<UserFuncionarioDetailsScr
   List<Map<String, dynamic>> _lojasUsuario = [];
   List<Map<String, dynamic>> _todasLojas = [];
   final LojaService _lojaService = LojaService();
+  Map<int, Map<int, Map<String, dynamic>>> _agendaPorDiaPeriodo = {};
+  bool _agendaLoading = false;
 
   @override
   void initState() {
@@ -32,24 +35,41 @@ class _UserFuncionarioDetailsScreenState extends State<UserFuncionarioDetailsScr
     setState(() {
       _isLoading = true;
       _errorMessage = null;
+      _agendaLoading = true;
     });
     try {
       final data = await UserService().getUsuario(widget.usuario['id']);
       final loginData = await UserService().getLoginUsuario(widget.usuario['id']);
       final lojasUsuario = await _lojaService.getLojasUsuario(widget.usuario['id']);
       final todasLojas = await _lojaService.listarLojas();
+      Map<int, Map<int, Map<String, dynamic>>> agendaPorDiaPeriodo = {};
+      for (int periodo = 0; periodo < 4; periodo++) {
+        agendaPorDiaPeriodo[periodo] = {};
+      }
+      for (final loja in lojasUsuario) {
+        final agenda = await _lojaService.getAgendaUsuarioLoja(idUsuario: widget.usuario['id'], idLoja: loja['id']);
+        for (final item in agenda) {
+          final dia = int.tryParse(item['dia_semana'].toString()) ?? 0;
+          final periodo = int.tryParse(item['periodo'].toString()) ?? 0;
+          agendaPorDiaPeriodo[periodo] ??= {};
+          agendaPorDiaPeriodo[periodo]![dia] = {...item, 'loja': loja};
+        }
+      }
       setState(() {
         userData = data;
         userEmail = loginData['email'];
         userTipo = loginData['tipo'];
         _lojasUsuario = lojasUsuario;
         _todasLojas = todasLojas;
+        _agendaPorDiaPeriodo = agendaPorDiaPeriodo;
         _isLoading = false;
+        _agendaLoading = false;
       });
     } catch (e) {
       setState(() {
         _errorMessage = e.toString().replaceAll('Exception: ', '');
         _isLoading = false;
+        _agendaLoading = false;
       });
     }
   }
@@ -150,6 +170,93 @@ class _UserFuncionarioDetailsScreenState extends State<UserFuncionarioDetailsScr
     }
   }
 
+  Widget _buildAgendaCalendario() {
+    if (_lojasUsuario.isEmpty) return SizedBox.shrink();
+    const diasSemana = ['Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'];
+    const periodos = ['Loja 1', 'Loja 2', 'Loja 3', 'Loja 4'];
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text('Agenda semanal', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+        SizedBox(height: 12),
+        SingleChildScrollView(
+          scrollDirection: Axis.horizontal,
+          child: DataTable(
+            columns: [
+              DataColumn(label: Text('Semana')),
+              ...diasSemana.map((d) => DataColumn(label: Text(d))).toList(),
+            ],
+            rows: [
+              for (int periodo = 0; periodo < periodos.length; periodo++)
+                DataRow(
+                  cells: [
+                    DataCell(Text(periodos[periodo])),
+                    ...List.generate(6, (dia) {
+                      final agenda = _agendaPorDiaPeriodo[periodo]?[dia];
+                      return DataCell(
+                        agenda != null
+                          ? Row(
+                              children: [
+                                Flexible(child: Text(agenda['loja']['nome'] ?? '', overflow: TextOverflow.ellipsis)),
+                                IconButton(
+                                  icon: Icon(Icons.remove_circle, color: Colors.red, size: 18),
+                                  tooltip: 'Remover vínculo',
+                                  onPressed: () async {
+                                    await _lojaService.removerAgendaUsuarioLoja(
+                                      idUsuario: widget.usuario['id'],
+                                      idLoja: agenda['loja']['id'],
+                                      diaSemana: dia,
+                                      periodo: periodo,
+                                    );
+                                    _loadAll();
+                                  },
+                                ),
+                              ],
+                            )
+                          : IconButton(
+                              icon: Icon(Icons.add, color: Colors.blue, size: 18),
+                              tooltip: 'Vincular loja',
+                              onPressed: _lojasUsuario.isEmpty ? null : () async {
+                                final lojaSelecionada = await showDialog<Map<String, dynamic>>(
+                                  context: context,
+                                  builder: (context) => AlertDialog(
+                                    title: Text('Vincular loja'),
+                                    content: DropdownButtonFormField<int>(
+                                      isExpanded: true,
+                                      items: _lojasUsuario.map<DropdownMenuItem<int>>((l) => DropdownMenuItem<int>(
+                                        value: l['id'] as int,
+                                        child: Text(l['nome'] ?? ''),
+                                      )).toList(),
+                                      onChanged: (id) {
+                                        Navigator.of(context).pop(_lojasUsuario.firstWhere((l) => l['id'] == id));
+                                      },
+                                      decoration: InputDecoration(labelText: 'Selecione a loja para ${periodos[periodo]} em ${diasSemana[dia]}'),
+                                    ),
+                                  ),
+                                );
+                                if (lojaSelecionada != null) {
+                                  await _lojaService.adicionarAgendaUsuarioLoja(
+                                    idUsuario: widget.usuario['id'],
+                                    idLoja: lojaSelecionada['id'],
+                                    diaSemana: dia,
+                                    periodo: periodo,
+                                  );
+                                  _loadAll();
+                                }
+                              },
+                            ),
+                      );
+                    }),
+                  ],
+                ),
+            ],
+          ),
+        ),
+        SizedBox(height: 24),
+      ],
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -248,8 +355,32 @@ class _UserFuncionarioDetailsScreenState extends State<UserFuncionarioDetailsScr
                               );
                             }).toList(),
                           ),
+                        SizedBox(height: 24),
+                        Container(
+                          width: double.infinity,
+                          child: ElevatedButton.icon(
+                            onPressed: () {
+                              Navigator.of(context).push(
+                                MaterialPageRoute(
+                                  builder: (context) => HistoricoPontosFuncionarioScreen(
+                                    idFuncionario: widget.usuario['id'],
+                                    nomeFuncionario: userData?['nome'] ?? 'Funcionário',
+                                  ),
+                                ),
+                              );
+                            },
+                            icon: Icon(Icons.history),
+                            label: Text('Ver Histórico de Pontos'),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.orange,
+                              foregroundColor: Colors.white,
+                              padding: EdgeInsets.symmetric(vertical: 16),
+                            ),
+                          ),
+                        ),
                       ],
                       SizedBox(height: 20),
+                      if (_getTipoExibicao(userTipo) == 'Funcionário') _buildAgendaCalendario(),
                     ],
                   ),
                 ),

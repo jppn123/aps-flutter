@@ -7,6 +7,7 @@ import '../screens/registrar_ponto_screen.dart';
 import '../screens/user_data_screen.dart';
 import '../screens/team_screen.dart';
 import '../screens/criar_usuario_screen.dart';
+import '../screens/historico_pontos_screen.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../screens/loja_crud_screen.dart';
 
@@ -70,6 +71,16 @@ class AppDrawer extends StatelessWidget {
                   }
                 },
               ),
+              if (tpLogin != 'admin')
+                ListTile(
+                  leading: Icon(Icons.history),
+                  title: Text('Histórico de Pontos'),
+                  onTap: () {
+                    Navigator.of(context).pushReplacement(
+                      MaterialPageRoute(builder: (context) => HistoricoPontosScreen()),
+                    );
+                  },
+                ),
               ListTile(
                 leading: Icon(Icons.group),
                 title: Text('Minha Equipe'),

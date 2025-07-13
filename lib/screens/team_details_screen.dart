@@ -131,7 +131,6 @@ class _TeamDetailsScreenState extends State<TeamDetailsScreen> {
   }
 
   Future<void> _removerUsuario(Map<String, dynamic> usuario) async {
-    // Verificar se o coordenador está tentando remover um administrador
     if (_tipoUsuario == 'coord' && usuario['tipo'] == 'admin') {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(

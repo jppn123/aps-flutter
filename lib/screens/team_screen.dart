@@ -38,14 +38,12 @@ class _TeamScreenState extends State<TeamScreen> {
       });
 
       if (tipoUsuario == 'admin') {
-        // Administradores veem todos os times
         final times = await _teamService.getTimes();
         setState(() {
           _times = times;
           _isLoading = false;
         });
       } else if (tipoUsuario == 'coord') {
-        // Coordenadores veem apenas os times que criaram
         final idUsuario = await _teamService.getIdUsuario();
         if (idUsuario != null) {
           final timesData = await _teamService.getTimesUsuarioFunc(idUsuario);
@@ -61,7 +59,6 @@ class _TeamScreenState extends State<TeamScreen> {
           });
         }
       } else {
-        // Funcionários veem apenas seus times
         final idUsuario = await _teamService.getIdUsuario();
         if (idUsuario != null) {
           try {

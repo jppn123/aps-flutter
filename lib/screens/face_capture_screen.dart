@@ -599,7 +599,6 @@ class FaceGuidePainter extends CustomPainter {
       ..color = Colors.blue
       ..style = PaintingStyle.fill;
 
-    // Pontos nos cantos da oval
     final dots = [
       Offset(center.dx - radiusX * 0.8, center.dy - radiusY * 0.8),
       Offset(center.dx + radiusX * 0.8, center.dy - radiusY * 0.8),
