@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../services/recover_service.dart';
+import 'login_screen.dart';
 
 class RecoverLoginScreen extends StatefulWidget {
   @override
@@ -69,6 +70,15 @@ class _RecoverLoginScreenState extends State<RecoverLoginScreen> {
       setState(() {
         _senhaSuccess = 'Senha alterada com sucesso!';
       });
+      
+      // Aguardar um pouco para mostrar a mensagem de sucesso
+      await Future.delayed(Duration(seconds: 2));
+      
+      // Retornar para a página de login
+      Navigator.of(context).pushAndRemoveUntil(
+        MaterialPageRoute(builder: (context) => LoginScreen()),
+        (route) => false,
+      );
     } catch (e) {
       setState(() {
         _senhaError = e.toString();
@@ -80,13 +90,14 @@ class _RecoverLoginScreenState extends State<RecoverLoginScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: Text('Recuperar Senha')),
-      body: Padding(
+      body: SingleChildScrollView(
         padding: const EdgeInsets.all(16.0),
         child: Form(
           key: _formKey,
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
+              SizedBox(height: 20),
               if (!_emailSent) ...[
                 TextFormField(
                   controller: _emailController,
@@ -152,6 +163,7 @@ class _RecoverLoginScreenState extends State<RecoverLoginScreen> {
                 onPressed: () => Navigator.pop(context),
                 child: Text('Voltar ao login'),
               ),
+              SizedBox(height: 20), // Espaço extra no final para evitar overflow
             ],
           ),
         ),
