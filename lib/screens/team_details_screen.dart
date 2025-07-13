@@ -193,7 +193,7 @@ class _TeamDetailsScreenState extends State<TeamDetailsScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Detalhes do Time'),
+        title: Text('Detalhes da Equipe'),
         
       ),
       body: _isLoading
@@ -203,7 +203,7 @@ class _TeamDetailsScreenState extends State<TeamDetailsScreen> {
                 children: [
                   CircularProgressIndicator(),
                   SizedBox(height: 16),
-                  Text('Carregando detalhes do time...'),
+                  Text('Carregando detalhes da equipe...'),
                 ],
               ),
             )
@@ -215,7 +215,7 @@ class _TeamDetailsScreenState extends State<TeamDetailsScreen> {
                       Icon(Icons.error, color: Colors.red, size: 64),
                       SizedBox(height: 16),
                       Text(
-                        'Erro ao carregar detalhes do time',
+                        'Erro ao carregar detalhes da equipe',
                         style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                       ),
                       SizedBox(height: 8),
@@ -244,7 +244,7 @@ class _TeamDetailsScreenState extends State<TeamDetailsScreen> {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(
-                                'Nome do Time',
+                                'Nome da Equipe',
                                 style: TextStyle(
                                   fontSize: 16,
                                   fontWeight: FontWeight.bold,
@@ -287,7 +287,7 @@ class _TeamDetailsScreenState extends State<TeamDetailsScreen> {
                         children: [
                           Expanded(
                             child: Text(
-                              'Membros do Time (${_usuarios.length})',
+                              'Membros da Equipe (${_usuarios.length})',
                               style: TextStyle(
                                 fontSize: 20,
                                 fontWeight: FontWeight.bold,
@@ -326,7 +326,7 @@ class _TeamDetailsScreenState extends State<TeamDetailsScreen> {
                               Icon(Icons.people, size: 64, color: Colors.grey),
                               SizedBox(height: 16),
                               Text(
-                                'Nenhum membro no time',
+                                'Nenhum membro na equipe',
                                 style: TextStyle(
                                   fontSize: 18,
                                   fontWeight: FontWeight.bold,
@@ -335,8 +335,8 @@ class _TeamDetailsScreenState extends State<TeamDetailsScreen> {
                               SizedBox(height: 8),
                               Text(
                                 _tipoUsuario == 'admin' || _tipoUsuario == 'coord'
-                                    ? 'Adicione usuários ao time clicando no botão "Adicionar".'
-                                    : 'Este time ainda não possui membros.',
+                                    ? 'Adicione usuários à equipe clicando no botão "Adicionar".'
+                                    : 'Esta equipe ainda não possui membros.',
                                 textAlign: TextAlign.center,
                                 style: TextStyle(color: Colors.grey[600]),
                               ),
