@@ -17,6 +17,7 @@ import '../screens/registrar_ponto_screen.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../services/auth_service.dart';
 import 'criar_usuario_screen.dart';
+import '../screens/loja_crud_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   @override
@@ -131,28 +132,49 @@ class _HomeScreenState extends State<HomeScreen> {
                           ],
                         ),
                         SizedBox(height: 15),
-                        SizedBox(
-                          width: double.infinity,
-                          child: ElevatedButton.icon(
-                            onPressed: () {
-                              if (tpLogin == 'admin') {
-                                Navigator.of(context).push(
-                                  MaterialPageRoute(builder: (context) => CriarUsuarioScreen()),
-                                );
-                              } else {
-                                Navigator.of(context).push(
-                                  MaterialPageRoute(builder: (context) => RegistrarPontoScreen()),
-                                );
-                              }
-                            },
-
-                            icon: Icon(tpLogin == 'admin' ? Icons.person_add : Icons.camera_alt),
-                            label: Text(tpLogin == 'admin' ? 'Criar Usuário' : 'Registrar Ponto'),
-                            style: ElevatedButton.styleFrom(
-                              padding: EdgeInsets.symmetric(vertical: 28),
-                              textStyle: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Expanded(
+                              child: ElevatedButton.icon(
+                                onPressed: () {
+                                  if (tpLogin == 'admin') {
+                                    Navigator.of(context).push(
+                                      MaterialPageRoute(builder: (context) => CriarUsuarioScreen()),
+                                    );
+                                  } else {
+                                    Navigator.of(context).push(
+                                      MaterialPageRoute(builder: (context) => RegistrarPontoScreen()),
+                                    );
+                                  }
+                                },
+                                icon: Icon(tpLogin == 'admin' ? Icons.person_add : Icons.camera_alt),
+                                label: Text(tpLogin == 'admin' ? 'Criar Usuário' : 'Registrar Ponto'),
+                                style: ElevatedButton.styleFrom(
+                                  padding: EdgeInsets.symmetric(vertical: 24),
+                                  textStyle: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                                ),
+                              ),
                             ),
-                          ),
+                            if (tpLogin == 'admin' || tpLogin == 'coord') ...[
+                              SizedBox(width: 15),
+                              Expanded(
+                                child: ElevatedButton.icon(
+                                  onPressed: () {
+                                    Navigator.of(context).push(
+                                      MaterialPageRoute(builder: (context) => LojaCrudScreen()),
+                                    );
+                                  },
+                                  icon: Icon(Icons.store),
+                                  label: Text('Lojas'),
+                                  style: ElevatedButton.styleFrom(
+                                    padding: EdgeInsets.symmetric(vertical: 24),
+                                    textStyle: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ],
                         ),
                       ],
                     );

@@ -8,6 +8,7 @@ import '../screens/user_data_screen.dart';
 import '../screens/team_screen.dart';
 import '../screens/criar_usuario_screen.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import '../screens/loja_crud_screen.dart';
 
 class AppDrawer extends StatelessWidget {
   final VoidCallback? onLogout;
@@ -78,6 +79,16 @@ class AppDrawer extends StatelessWidget {
                   );
                 },
               ),
+              if (tpLogin == 'admin' || tpLogin == 'coord')
+                ListTile(
+                  leading: Icon(Icons.store),
+                  title: Text('Lojas'),
+                  onTap: () {
+                    Navigator.of(context).pushReplacement(
+                      MaterialPageRoute(builder: (context) => LojaCrudScreen()),
+                    );
+                  },
+                ),
               ListTile(
                 leading: Icon(Icons.logout),
                 title: Text('Sair'),

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'dart:typed_data';
 import '../services/user_service.dart';
+import '../services/loja_service.dart';
 
 class UserFuncionarioDetailsScreen extends StatefulWidget {
   final Map<String, dynamic> usuario;
@@ -17,14 +18,17 @@ class _UserFuncionarioDetailsScreenState extends State<UserFuncionarioDetailsScr
   String? userTipo;
   bool _isLoading = true;
   String? _errorMessage;
+  List<Map<String, dynamic>> _lojasUsuario = [];
+  List<Map<String, dynamic>> _todasLojas = [];
+  final LojaService _lojaService = LojaService();
 
   @override
   void initState() {
     super.initState();
-    _loadUserData();
+    _loadAll();
   }
 
-  Future<void> _loadUserData() async {
+  Future<void> _loadAll() async {
     setState(() {
       _isLoading = true;
       _errorMessage = null;
@@ -32,10 +36,14 @@ class _UserFuncionarioDetailsScreenState extends State<UserFuncionarioDetailsScr
     try {
       final data = await UserService().getUsuario(widget.usuario['id']);
       final loginData = await UserService().getLoginUsuario(widget.usuario['id']);
+      final lojasUsuario = await _lojaService.getLojasUsuario(widget.usuario['id']);
+      final todasLojas = await _lojaService.listarLojas();
       setState(() {
         userData = data;
         userEmail = loginData['email'];
         userTipo = loginData['tipo'];
+        _lojasUsuario = lojasUsuario;
+        _todasLojas = todasLojas;
         _isLoading = false;
       });
     } catch (e) {
@@ -46,24 +54,104 @@ class _UserFuncionarioDetailsScreenState extends State<UserFuncionarioDetailsScr
     }
   }
 
+  Future<void> _adicionarLojaDialog() async {
+    final lojasDisponiveis = _todasLojas.where((l) => !_lojasUsuario.any((lu) => lu['id'] == l['id'])).toList();
+    int? idLojaSelecionada;
+    final result = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text('Vincular Loja ao Usuário'),
+        content: LayoutBuilder(
+          builder: (context, constraints) {
+            final maxWidth = MediaQuery.of(context).size.width * 0.8;
+            return ConstrainedBox(
+              constraints: BoxConstraints(maxWidth: maxWidth),
+              child: DropdownButtonFormField<int>(
+                isExpanded: true,
+                items: lojasDisponiveis.map<DropdownMenuItem<int>>((loja) => DropdownMenuItem<int>(
+                  value: loja['id'] as int,
+                  child: Text(loja['nome'] ?? ''),
+                )).toList(),
+                onChanged: (value) => idLojaSelecionada = value,
+                decoration: InputDecoration(labelText: 'Selecione a loja'),
+              ),
+            );
+          },
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(false),
+            child: Text('Cancelar'),
+          ),
+          ElevatedButton(
+            onPressed: () async {
+              if (idLojaSelecionada == null) return;
+              try {
+                await _lojaService.adicionarUsuarioLoja(
+                  idUsuario: widget.usuario['id'],
+                  idLoja: idLojaSelecionada!,
+                );
+                Navigator.of(context).pop(true);
+              } catch (e) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(content: Text('Erro ao vincular loja: $e'), backgroundColor: Colors.red),
+                );
+              }
+            },
+            child: Text('Vincular'),
+          ),
+        ],
+      ),
+    );
+    if (result == true) {
+      _loadAll();
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Loja vinculada com sucesso!'), backgroundColor: Colors.green),
+      );
+    }
+  }
+
+  Future<void> _removerVinculoLoja(int idLoja, String nomeLoja) async {
+    final result = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text('Remover vínculo'),
+        content: Text('Deseja remover o vínculo com a loja "$nomeLoja"?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(false),
+            child: Text('Cancelar'),
+          ),
+          ElevatedButton(
+            onPressed: () async {
+              try {
+                await _lojaService.removerUsuarioLoja(
+                  idUsuario: widget.usuario['id'],
+                  idLoja: idLoja,
+                );
+                Navigator.of(context).pop(true);
+              } catch (e) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(content: Text('Erro ao remover vínculo: $e'), backgroundColor: Colors.red),
+                );
+              }
+            },
+            child: Text('Remover'),
+            style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+          ),
+        ],
+      ),
+    );
+    if (result == true) {
+      _loadAll();
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Vínculo removido com sucesso!'), backgroundColor: Colors.green),
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
-    // Mock de lojas
-    final lojas = [
-      {
-        'id': 1,
-        'nome': 'Loja Central',
-        'endereco': 'Rua Principal, 123',
-        'imagem': null, // base64 ou null
-      },
-      {
-        'id': 2,
-        'nome': 'Loja Norte',
-        'endereco': 'Avenida Norte, 456',
-        'imagem': null,
-      },
-    ];
-
     return Scaffold(
       appBar: AppBar(
         title: Text('Detalhes do ' + _getTipoExibicao(userTipo)),
@@ -119,36 +207,49 @@ class _UserFuncionarioDetailsScreenState extends State<UserFuncionarioDetailsScr
                       ),
                       SizedBox(height: 24),
                       if (_getTipoExibicao(userTipo) == 'Funcionário') ...[
-                        Text(
-                          'Lojas do usuário',
-                          style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Text(
+                              'Lojas do usuário',
+                              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                            ),
+                            ElevatedButton.icon(
+                              onPressed: _adicionarLojaDialog,
+                              icon: Icon(Icons.store),
+                              label: Text('Adicionar'),
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: Colors.blue,
+                                foregroundColor: Colors.white,
+                              ),
+                            ),
+                          ],
                         ),
                         SizedBox(height: 16),
-                        if (lojas.isEmpty)
+                        if (_lojasUsuario.isEmpty)
                           Center(
                             child: Text('Nenhuma loja cadastrada para este usuário.'),
                           )
                         else
                           Column(
-                            children: lojas.map((loja) {
+                            children: _lojasUsuario.map((loja) {
                               return Card(
                                 margin: EdgeInsets.only(bottom: 12),
                                 child: ListTile(
-                                  leading: loja['imagem'] != null
-                                      ? Image.memory(
-                                          Uint8List(0),
-                                          width: 48,
-                                          height: 48,
-                                          fit: BoxFit.cover,
-                                        )
-                                      : Icon(Icons.store, size: 40, color: Colors.grey),
+                                  leading: Icon(Icons.store, size: 40, color: Colors.grey),
                                   title: Text(loja['nome']?.toString() ?? 'Sem nome'),
                                   subtitle: Text(loja['endereco']?.toString() ?? ''),
+                                  trailing: IconButton(
+                                    icon: Icon(Icons.remove_circle, color: Colors.red),
+                                    tooltip: 'Remover vínculo',
+                                    onPressed: () => _removerVinculoLoja(loja['id'], loja['nome']?.toString() ?? ''),
+                                  ),
                                 ),
                               );
                             }).toList(),
                           ),
                       ],
+                      SizedBox(height: 20),
                     ],
                   ),
                 ),

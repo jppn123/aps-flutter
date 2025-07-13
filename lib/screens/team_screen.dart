@@ -247,16 +247,16 @@ class _TeamScreenState extends State<TeamScreen> {
             Icon(Icons.group, size: 64, color: Colors.grey),
             SizedBox(height: 16),
             Text(
-              'Nenhum time encontrado',
+              'Nenhuma equipe encontrada',
               style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
             SizedBox(height: 8),
             Text(
               _tipoUsuario == 'admin'
-                  ? 'Crie seu primeiro time clicando no botão + no canto superior direito.'
+                  ? 'Crie sua primeira equipe clicando no botão + no canto superior direito.'
                   : _tipoUsuario == 'coord'
-                      ? 'Você ainda não criou nenhum time. Crie seu primeiro time clicando no botão + no canto superior direito.'
-                      : 'Você ainda não foi adicionado a nenhum time.',
+                      ? 'Você ainda não criou nenhuma equipe. Crie sua primeira equipe clicando no botão + no canto superior direito.'
+                      : 'Você ainda não foi adicionado a nenhuma equipe.',
               textAlign: TextAlign.center,
               style: TextStyle(color: Colors.grey[600]),
             ),
